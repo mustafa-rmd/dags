@@ -1,17 +1,19 @@
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.providers.airbyte.operators.airbyte import AirbyteTriggerSyncOperator
+from airflow.models.param import Param
 
-with DAG(dag_id='trigger_airbyte_job_example',
+with DAG(dag_id='airbyte',
          default_args={'owner': 'airflow'},
          schedule_interval='*/5 * * * *',
-         start_date=days_ago(1)
+         start_date=days_ago(1),
+         params={"connection_id_param": Param("", type="string")}
     ) as dag:
 
-    money_to_json = AirbyteTriggerSyncOperator(
-        task_id='airbyte_money_json_example',
+    airbyte_trigger_sync_operator = AirbyteTriggerSyncOperator(
+        task_id='airbyte_sync',
         airbyte_conn_id='air_byte_connection',
-        connection_id='8ea1a0c5-c6c6-4553-988c-9f2dc95bebe3',
+        connection_id=["{{params.connection_id_param}}"],
         asynchronous=False,
         timeout=20000,
         wait_seconds=3
